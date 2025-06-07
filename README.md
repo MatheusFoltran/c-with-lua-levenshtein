@@ -57,16 +57,10 @@ make run
 
 ---
 
-## 📜 Licença
-
-Este projeto inclui a biblioteca `levenshtein.c` licenciada sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
-
----
-
 ## 📌 Observações
 
-- A biblioteca externa não foi modificada em sua lógica, apenas ajustada para fins de compilação standalone.
-- O projeto atende todos os requisitos mínimos do trabalho prático, incluindo:
+- A biblioteca externa não foi modificada, apenas implementada.
+- O projeto atende todos os requisitos essenciais do trabalho prático, incluindo:
   - Integração entre C e Lua
   - Uso real de uma biblioteca externa em C
   - Execução automatizada via Makefile
