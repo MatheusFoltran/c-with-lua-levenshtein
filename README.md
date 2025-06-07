@@ -13,11 +13,11 @@ A proposta faz parte de um trabalho prático com o objetivo de ilustrar integra�
 
 ```
 ├── main.c           # Programa principal em C
-├── levenshtein.c    # Biblioteca externa (editada levemente para compatibilidade)
+├── levenshtein.c    # Biblioteca externa
 ├── levenshtein.h    # Header da biblioteca
 ├── script.lua       # Script Lua que executa e interpreta os resultados
 ├── Makefile         # Automatiza build, execução e testes
-├── LICENSE          # Licença MIT da biblioteca original
+├── LICENSE          # Licença MIT (usada na biblioteca original)
 └── README.md        # Este arquivo
 ```
 
@@ -59,8 +59,13 @@ make run
 
 ## 📌 Observações
 
-- A biblioteca externa não foi modificada, apenas implementada.
+- A biblioteca externa não foi modificada nem reimplementada, foi usada diretamente na main.
+- Foram utilizados apenas os arquivos .c e .h da biblioteca externa, para fins de praticidade.
 - O projeto atende todos os requisitos essenciais do trabalho prático, incluindo:
   - Integração entre C e Lua
   - Uso real de uma biblioteca externa em C
   - Execução automatizada via Makefile
+
+## Repositório
+
+[🔗 Acesse o repositório no GitHub](https://github.com/MatheusFoltran/c-with-lua-levenshtein)
