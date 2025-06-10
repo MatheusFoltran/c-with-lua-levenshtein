@@ -1,14 +1,16 @@
--- Script Lua que chama o programa C
+-- Script Lua para usar com interpretador embarcado
+-- Agora chama diretamente a função C registrada
+
 -- Função auxiliar para logs padronizados
 function log(msg)
     print("[LUA] " .. msg)
 end
 
-log("Iniciando script de teste Levenshtein")
+log("Iniciando script Levenshtein com funções C embarcadas")
 print("=" .. string.rep("=", 50))
 
--- Função para executar programa C e capturar saída
-function calcular_levenshtein(str1, str2)
+-- Função para calcular distância usando função C registrada
+function calcular_levenshtein_embarcado(str1, str2)
     -- Validação de entrada
     if not str1 or not str2 then
         log("Erro: strings não podem ser nil")
@@ -21,39 +23,16 @@ function calcular_levenshtein(str1, str2)
     
     log(string.format("Calculando distância entre '%s' e '%s'", str1, str2))
     
-    -- Escapar aspas duplas nas strings para evitar problemas com caracteres especiais
-    local str1_escaped = str1:gsub('"', '\\"')
-    local str2_escaped = str2:gsub('"', '\\"')
-    
-    local comando = string.format('./programa "%s" "%s"', str1_escaped, str2_escaped)
-    log("Executando: " .. comando)
-    
-    local handle = io.popen(comando)
-    local resultado = handle:read("*a")
-    local success = handle:close()
+    -- Chama diretamente a função C registrada
+    local success, resultado = pcall(levenshtein, str1, str2)
     
     if not success then
-        log("Erro: falha na execução do programa C")
+        log("Erro ao chamar função C: " .. tostring(resultado))
         return nil
     end
     
-    if not resultado or resultado == "" then
-        log("Erro: programa C não retornou nenhuma saída")
-        return nil
-    end
-    
-    local distancia = resultado:match("RESULTADO: (%d+)")
-    
-    if distancia then
-        distancia = tonumber(distancia)
-        log(string.format("Resultado recebido: %d", distancia))
-        return distancia
-    else
-        log("Erro: não conseguiu extrair resultado")
-        log("Saída completa:")
-        print(resultado)
-        return nil
-    end
+    log(string.format("Resultado recebido da função C: %d", resultado))
+    return resultado
 end
 
 -- Função para exibir resultado de forma padronizada
@@ -76,14 +55,19 @@ local testes = {
     {"distancia", "instancia"},
     {"cadeira", "madeira"},
     {"programando", "programador"},
-    {"chave", "bolsa"}
+    {"chave", "bolsa"},
+    {"", "teste"},  -- Teste com string vazia
+    {"teste", ""},  -- Teste com string vazia
+    {"abc", "abc"}  -- Teste strings iguais
 }
 
 -- Executar testes
+log("Executando testes com função C embarcada...")
 local resultados = {}
+
 for i, teste in ipairs(testes) do
     print(string.format("\n--- Teste %d ---", i))
-    local distancia = calcular_levenshtein(teste[1], teste[2])
+    local distancia = calcular_levenshtein_embarcado(teste[1], teste[2])
     
     -- Armazenar resultado com informações do teste
     table.insert(resultados, {
@@ -124,14 +108,46 @@ if #distancias_validas > 0 then
     
     print("\n" .. string.rep("-", 30))
     log("Estatísticas:")
-    print(string.format("  Testes executados: %d", #resultados))
-    print(string.format("  Sucessos: %d", #distancias_validas))
-    print(string.format("  Falhas: %d", #resultados - #distancias_validas))
-    print(string.format("  Distância média: %.2f", media))
-    print(string.format("  Menor distância: %d", menor))
-    print(string.format("  Maior distância: %d", maior))
+    print(string.format(" Testes executados: %d", #resultados))
+    print(string.format(" Sucessos: %d", #distancias_validas))
+    print(string.format(" Falhas: %d", #resultados - #distancias_validas))
+    print(string.format(" Distância média: %.2f", media))
+    print(string.format(" Menor distância: %d", menor))
+    print(string.format(" Maior distância: %d", maior))
 else
     log("Nenhum teste foi executado com sucesso!")
+end
+
+-- Demonstrar funcionalidade adicional do Lua
+log("Demonstrando processamento adicional em Lua...")
+
+-- Criar tabela de similaridade baseada na distância
+local similaridades = {}
+for _, resultado in ipairs(resultados) do
+    if resultado.distancia then
+        local max_len = math.max(#resultado.str1, #resultado.str2)
+        local similaridade = 0
+        if max_len > 0 then
+            similaridade = 100.0 * (1.0 - resultado.distancia / max_len)
+        else
+            similaridade = 100.0  -- Strings vazias são 100% similares
+        end
+        
+        table.insert(similaridades, {
+            par = resultado.str1 .. " <-> " .. resultado.str2,
+            similaridade = similaridade
+        })
+    end
+end
+
+-- Ordenar por similaridade (maior para menor)
+table.sort(similaridades, function(a, b) return a.similaridade > b.similaridade end)
+
+print("\n" .. string.rep("-", 30))
+log("Top 5 pares mais similares:")
+for i = 1, math.min(5, #similaridades) do
+    local item = similaridades[i]
+    print(string.format(" %d. %s: %.2f%%", i, item.par, item.similaridade))
 end
 
 log("Script finalizado!")
